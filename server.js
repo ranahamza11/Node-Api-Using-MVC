@@ -1,81 +1,36 @@
+require('dotenv').config();
 const express = require("express");
 const mongoose = require('mongoose');
-const Product = require('./models/productModel')
+//const errorsyncHandler = require('error-sync')
+const errorMiddleware = require('./middleware/errorMiddleware');
+const productRoute = require('./routes/productRoutes');
+const userRoute = require('./routes/userRoute');
+
 const app = express();
+const MONGO_URL = process.env.MONGO_URL;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
+
+app.use('/api/products', productRoute);
+app.use('/api/users', userRoute);
+
+
 app.get('/', (req, res) => {
-    res.send('Hello world');
+    throw new Error('Fake error');
+    //res.send('Hello world');
 });
 
 app.get('/blog', (req, res) => {
-    res.send('Hello Blog from youu');
+    throw new Error('ser error');
+    //res.send('Hello Blog from youu');
 });
 
-app.get('/products/:id', async(req, res) => {
-    try {
-        const {id} = req.params;
-
-        const product = await Product.findById(id);
-        res.status(200).json(product);
-    } catch(error) {
-        res.status(500).json({message: error.message});
-    }
-})
-
-app.put('/products/:id', async(req, res) => {
-    try {
-        const {id} = req.params;
-        const product = await Product.findByIdAndUpdate(id, req.body);
-        if(!product) {
-            return res.status(404).json({message: `not find the product with id ${id}`});
-        }
-        const updatedProduct = await Product.findById(id);
-        res.status(200).json(updatedProduct);
-    } catch (error) {
-        res.status(500).json({message: error.message});
-    }
-});
-
-app.delete('/products/:id', async(req, res) => {
-    try {
-        const {id} = req.params;
-        const product = await Product.findByIdAndDelete(id);
-
-        if(!product) {
-            return res.status(404).json({message: `not find the product with id ${id}`});
-        }
-
-        res.status(200).json(product);
-    } catch (error) {
-        res.status(500).json({message: error.message})
-    }
-});
-
-app.get('/products', async (req, res) => {
-    try {
-        const products = await Product.find({});
-        res.status(200).json(products);
-    } catch(error) {
-        res.status(500).json({message: error.message});
-    }
-});
-
-app.post('/products', async (req, res) => {
-    try {
-        const product = await Product.create(req.body);
-        res.status(200).json(product);
-    }catch (error) {
-        console.log(error.message);
-        res.status(500).json({message: error.message});
-    }
-})
-
-
-mongoose.connect("mongodb+srv://drovisfrovis:donno123@cluster0.39jyplo.mongodb.net/Node-API?retryWrites=true&w=majority")
+app.use(errorMiddleware);
+mongoose.connect(MONGO_URL)
 .then(() => {
         console.log("connected to database");
-        app.listen(3000, () => console.log('listen to the 3000'));
+        app.listen(PORT, () => console.log(`listen to the ${PORT}`));
     })
     .catch(() => console.log(error));
