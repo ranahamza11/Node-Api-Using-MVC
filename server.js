@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require("express");
 const mongoose = require('mongoose');
-//const errorsyncHandler = require('error-sync')
+var cors = require('cors')
 const errorMiddleware = require('./middleware/errorMiddleware');
 const productRoute = require('./routes/productRoutes');
 const userRoute = require('./routes/userRoute');
@@ -9,7 +9,14 @@ const userRoute = require('./routes/userRoute');
 const app = express();
 const MONGO_URL = process.env.MONGO_URL;
 const PORT = process.env.PORT || 3000;
+const FRONTEND = process.env.FRONTEND;
 
+var corsOptions = {
+    origin: FRONTEND,
+    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 
